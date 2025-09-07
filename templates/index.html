@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Weather App (Flask)</title>
+  <style>
+   body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #74ebd5, #ACB6E5);
+      color: #333;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .search-container {
+      max-width: 400px;
+      width: 100%;
+      display: flex;
+      gap: 10px;
+      margin: 0 auto;
+    }
+    .search-container input[type="text"] {
+      flex-grow: 1;
+      padding: 10px 15px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      outline: none;
+    }
+    .search-container button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      transition: background-color 0.3s ease;
+    }
+    .search-container button:hover {
+      background-color: #357ABD;
+    }
+    .weather-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      padding: 30px 40px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      margin: 0 auto;
+    }
+    .location {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+    .date {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 20px;
+    }
+    .temp {
+      font-size: 4rem;
+      font-weight: 700;
+      margin: 10px 0;
+    }
+    .weather-icon {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 20px;
+    }
+    .description {
+      font-size: 1.2rem;
+      font-weight: 600;
+      text-transform: capitalize;
+      margin-bottom: 20px;
+    }
+    .details {
+      display: flex;
+      justify-content: space-around;
+      font-size: 0.9rem;
+      color: #555;
+    }
+    .details div {
+      text-align: center;
+    }
+    .details div span {
+      display: block;
+      font-weight: 700;
+      margin-top: 5px;
+      color: #222;
+    }
+  </style>
+</head>
+<body>
+  <div class="search-container">
+    <input type="text" id="cityInput" placeholder="Enter city name" />
+    <button id="searchBtn">Search</button>
+  </div>
+
+  <div class="weather-card" id="weatherCard">
+    <div class="location" id="location">--</div>
+    <div class="date" id="date">--</div>
+    <img class="weather-icon" id="weatherIcon" src="" alt="Weather Icon" />
+    <div class="temp" id="temp">--°C</div>
+    <div class="description" id="description">--</div>
+    <div class="details">
+      <div>Humidity <span id="humidity">--%</span></div>
+      <div>Wind <span id="wind">-- km/h</span></div>
+      <div>Pressure <span id="pressure">-- hPa</span></div>
+    </div>
+  </div>
+
+  <script>
+    async function fetchWeather(city) {
+      try {
+        const res = await fetch("/get_weather", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ city })
+        });
+
+        const data = await res.json();
+
+        if (data.error) {
+          alert(data.error);
+          return;
+        }
+
+        document.getElementById("location").textContent = data.location;
+        document.getElementById("date").textContent =
+          new Date().toLocaleDateString("en-US", {
+            weekday: "long", year: "numeric", month: "long", day: "numeric"
+          });
+        document.getElementById("temp").innerHTML = data.temp + "&#8451;";
+        document.getElementById("description").textContent = data.description;
+        document.getElementById("weatherIcon").src =
+          `https://openweathermap.org/img/wn/${data.icon}@2x.png`;
+        document.getElementById("humidity").textContent = data.humidity + "%";
+        document.getElementById("wind").textContent = data.wind + " km/h";
+        document.getElementById("pressure").textContent = data.pressure + " hPa";
+      } catch (error) {
+        alert("Error fetching weather data.");
+      }
+    }
+
+    document.getElementById("searchBtn").addEventListener("click", () => {
+      const city = document.getElementById("cityInput").value.trim();
+      if (city) fetchWeather(city);
+      else alert("Please enter a city name.");
+    });
+
+    // Default load
+    fetchWeather("Delhi");
+  </script>
+</body>
+</html>
